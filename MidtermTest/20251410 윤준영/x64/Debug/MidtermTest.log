@@ -1,0 +1,6 @@
+﻿  test.c
+D:\신지섭\MidtermTest\test.c(5,2): warning C4013: 'print'이(가) 정의되지 않았습니다. extern은 int형을 반환하는 것으로 간주합니다.
+D:\신지섭\MidtermTest\test.c(6,3): error C2146: 구문 오류: ';'이(가) 'print' 식별자 앞에 없습니다.
+D:\신지섭\MidtermTest\test.c(7,3): error C2146: 구문 오류: ';'이(가) 'print' 식별자 앞에 없습니다.
+D:\신지섭\MidtermTest\test.c(8,3): error C2146: 구문 오류: ';'이(가) 'print' 식별자 앞에 없습니다.
+D:\신지섭\MidtermTest\test.c(9,3): error C2143: 구문 오류: ';'이(가) 'return' 앞에 없습니다.
