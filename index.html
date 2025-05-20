@@ -1,54 +1,622 @@
-<!-- index.html -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <title>배달의 릉주->日食</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>일식 배달</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
   <style>
-    body { font-family: Arial; text-align: center; padding: 20px; }
-    .button { margin: 10px; padding: 20px 40px; font-size: 20px; cursor: pointer; }
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      margin: 0;
+      background-color: #f4f6f9;
+      color: #333;
+    }
+    header {
+      text-align: center;
+      font-size: 2rem;
+      font-weight: 700;
+      margin: 1.5rem 0;
+      color: #2c3e50;
+    }
+    .search-box {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 1.5rem;
+    }
+    .search-box input {
+      padding: 0.6rem;
+      width: 280px;
+      border: 1px solid #ccc;
+      border-radius: 10px 0 0 10px;
+      outline: none;
+      font-size: 1rem;
+    }
+    .search-box button {
+      padding: 0.6rem 1.2rem;
+      border: none;
+      background-color: #ff6600;
+      color: white;
+      font-weight: 700;
+      border-radius: 0 10px 10px 0;
+      cursor: pointer;
+    }
+    .store-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1rem;
+      max-width: 1000px;
+      margin: auto;
+      padding: 1rem;
+    }
+    .store-card {
+      background: white;
+      border-radius: 1rem;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform 0.3s ease;
+    }
+    .store-card:hover {
+      transform: scale(1.02);
+    }
+    .store-card img {
+      width: 100%;
+      height: 160px;
+      object-fit: cover;
+    }
+    .store-card .info {
+      padding: 1rem;
+    }
+    .store-card .info h3 {
+      margin: 0 0 0.5rem 0;
+      font-size: 1.2rem;
+    }
+    .menu-page {
+      max-width: 700px;
+      margin: auto;
+      background: white;
+      border-radius: 1rem;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      padding: 1.5rem;
+      display: none;
+    }
+    .menu-item {
+      padding: 1rem 0;
+      border-bottom: 1px solid #eee;
+    }
+    .menu-item-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+    .extras label,
+    .extras select {
+      font-size: 0.95rem;
+    }
+    .extras select {
+      margin-top: 0.4rem;
+      width: 100%;
+    }
+    .cart-bar {
+      position: fixed;
+      bottom: 1rem;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 2rem;
+      background-color: #fff;
+      border-radius: 30px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      max-width: 90%;
+    }
+    .cart-bar button {
+      background-color: #ff6600;
+      color: white;
+      border: none;
+      padding: 0.5rem 1.2rem;
+      border-radius: 20px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .cart-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: none;
+      justify-content: center;
+      align-items: center;
+    }
+    .cart-content {
+      background: white;
+      border-radius: 1rem;
+      padding: 2rem;
+      max-width: 500px;
+      width: 90%;
+    }
+    .cart-item {
+      margin-bottom: 1rem;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 0.5rem;
+    }
+    .close-btn {
+      float: right;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 1.2rem;
+    }
+    .purchase-btn {
+      margin-top: 1rem;
+      width: 100%;
+      padding: 0.75rem;
+      background-color: #2ecc71;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+    @media (max-width: 600px) {
+      .search-box input {
+        width: 200px;
+      }
+      .menu-page {
+        padding: 1rem;
+      }
+    }
   </style>
 </head>
 <body>
-  <h1>🍱 日食</h1>
-  <button class="button" onclick="location.href='don.html'">덮밥전문</button>
-  <button class="button" onclick="location.href='ramen.html'">라멘집</button>
-  <button class="button" onclick="location.href='sushi.html'">초밥집</button>
+  <header>일본음식</header>
+  <div class="search-box">
+    <input type="text" placeholder="가게 이름, 메뉴 검색" id="searchInput" />
+    <button onclick="searchStores()">검색</button>
+  </div>
+  <div id="storeList" class="store-list"></div>
+  <div id="menuPage" class="menu-page"></div>
+  <div id="cartBar" class="cart-bar" style="display:none;">
+    <span id="cartCount">🛒 0개 담김</span>
+    <button onclick="showCartModal()">장바구니 보기</button>
+  </div>
+  <div id="cartModal" class="cart-modal">
+    <div class="cart-content">
+      <span class="close-btn" onclick="closeCartModal()">×</span>
+      <h3>장바구니</h3>
+      <div id="cartItems"></div>
+      <button class="purchase-btn" onclick="purchaseCart()">구매하기</button>
+    </div>
+  </div>
+  <script>
+    const stores = [
+      {
+        id: 1,
+        name: "스시야",
+        description: "신선한 초밥 전문점",
+        image: "https://source.unsplash.com/featured/?sushi",
+        menu: [
+          { name: "연어초밥", price: 12000, extras: [{name: "미소된장국", price: 1000}, {name: "밥 추가", price: 1000}] },
+          { name: "참치초밥", price: 15000, extras: [{name: "미소된장국", price: 1000}, {name: "와사비 추가", price: 500}] }
+        ]
+      },
+      {
+        id: 2,
+        name: "규동맛집",
+        description: "일본식 덮밥",
+        image: "https://source.unsplash.com/featured/?gyudon",
+        menu: [
+          { name: "기본 규동", price: 8500, extras: [{name: "계란", price: 1000}, {name: "김치", price: 1000}] },
+          { name: "더블 규동", price: 11000, extras: [{name: "밥 추가", price: 1000}, {name: "된장국", price: 1000}] }
+        ]
+      },
+      {
+        id: 3,
+        name: "라멘집",
+        description: "진한 국물의 일본 라멘",
+        image: "https://source.unsplash.com/featured/?ramen",
+        menu: [
+          { name: "돈코츠 라멘", price: 10000, extras: [{name: "계란 추가", price: 1000}, {name: "면 추가", price: 1500}] },
+          { name: "쇼유 라멘", price: 9000, extras: [{name: "차슈 추가", price: 2000}, {name: "김 추가", price: 500}] }
+        ]
+      }
+    ];
+
+    const cart = [];
+
+    function renderStores() {
+      const storeListDiv = document.getElementById("storeList");
+      storeListDiv.innerHTML = stores.map(store => `
+        <div class="store-card" onclick="renderMenuPage(${store.id})">
+          <img src="${store.image}" alt="${store.name}" />
+          <div class="info">
+            <h3>${store.name}</h3>
+            <p>${store.description}</p>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    function renderMenuPage(storeId) {
+      const store = stores.find(s => s.id === storeId);
+      const menuPageDiv = document.getElementById("menuPage");
+      document.getElementById("storeList").style.display = "none";
+      menuPageDiv.style.display = "block";
+      document.getElementById("cartBar").style.display = "flex";
+      menuPageDiv.innerHTML = `<h2>${store.name}</h2>` +
+        store.menu.map(item => `
+          <div class="menu-item">
+            <div class="menu-item-top">
+              <h4>${item.name} - ${item.price.toLocaleString()}원</h4>
+              <button onclick="addToCart('${item.name}', ${item.price}, ${storeId})">담기</button>
+            </div>
+            <div class="extras">
+              <label>추가 옵션:</label>
+              <select multiple id="extras-${item.name.replace(/\s+/g, '')}">
+                ${item.extras.map(extra => `<option value="${extra.name}" data-price="${extra.price}">${extra.name} (+${extra.price.toLocaleString()}원)</option>`).join('')}
+              </select>
+            </div>
+          </div>`).join('');
+    }
+
+    function addToCart(name, basePrice, storeId) {
+      const extrasSelect = document.getElementById(`extras-${name.replace(/\s+/g, '')}`);
+      const selectedExtras = Array.from(extrasSelect.selectedOptions).map(o => ({name: o.value, price: parseInt(o.dataset.price)}));
+      const totalExtrasPrice = selectedExtras.reduce((acc, cur) => acc + cur.price, 0);
+      const totalPrice = basePrice + totalExtrasPrice;
+      cart.push({ name, price: totalPrice, extras: selectedExtras });
+      updateCartCount();
+    }
+
+    function updateCartCount() {
+      document.getElementById("cartCount").textContent = `🛒 ${cart.length}개 담김`;
+    }
+
+    function showCartModal() {
+      const cartItemsDiv = document.getElementById("cartItems");
+      if (cart.length === 0) {
+        cartItemsDiv.innerHTML = "<p>장바구니가 비어 있습니다.</p>";
+      } else {
+        cartItemsDiv.innerHTML = cart.map(item => `
+          <div class="cart-item">
+            <strong>${item.name}</strong> (${item.price.toLocaleString()}원)<br />
+            <small>추가: ${item.extras.map(e => `${e.name} (+${e.price})`).join(', ') || '없음'}</small>
+          </div>
+        `).join("");
+      }
+      document.getElementById("cartModal").style.display = "flex";
+    }
+
+    function closeCartModal() {
+      document.getElementById("cartModal").style.display = "none";
+    }
+
+    function purchaseCart() {
+      alert("결제가 완료되었습니다. 감사합니다!");
+      cart.length = 0;
+      updateCartCount();
+      closeCartModal();
+    }
+
+    renderStores();
+  </script>
 </body>
 </html>
-
-<!-- don.html -->
 <!DOCTYPE html>
 <html lang="ko">
-<head><meta charset="UTF-8"><title>덮밥전문</title></head>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>일식 배달</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      margin: 0;
+      background-color: #f4f6f9;
+      color: #333;
+    }
+    header {
+      text-align: center;
+      font-size: 2rem;
+      font-weight: 700;
+      margin: 1.5rem 0;
+      color: #2c3e50;
+    }
+    .search-box {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 1.5rem;
+    }
+    .search-box input {
+      padding: 0.6rem;
+      width: 280px;
+      border: 1px solid #ccc;
+      border-radius: 10px 0 0 10px;
+      outline: none;
+      font-size: 1rem;
+    }
+    .search-box button {
+      padding: 0.6rem 1.2rem;
+      border: none;
+      background-color: #16dbe2;
+      color: white;
+      font-weight: 700;
+      border-radius: 0 10px 10px 0;
+      cursor: pointer;
+    }
+    .store-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1rem;
+      max-width: 1000px;
+      margin: auto;
+      padding: 1rem;
+    }
+    .store-card {
+      background: white;
+      border-radius: 1rem;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform 0.3s ease;
+    }
+    .store-card:hover {
+      transform: scale(1.02);
+    }
+    .store-card img {
+      width: 100%;
+      height: 160px;
+      object-fit: cover;
+    }
+    .store-card .info {
+      padding: 1rem;
+    }
+    .store-card .info h3 {
+      margin: 0 0 0.5rem 0;
+      font-size: 1.2rem;
+    }
+    .menu-page {
+      max-width: 700px;
+      margin: auto;
+      background: white;
+      border-radius: 1rem;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      padding: 1.5rem;
+      display: none;
+    }
+    .menu-item {
+      padding: 1rem 0;
+      border-bottom: 1px solid #eee;
+    }
+    .menu-item-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+    .extras {
+      margin-top: 0.5rem;
+    }
+    .extras label {
+      font-weight: bold;
+    }
+    .extras .checkbox-list {
+      margin-top: 0.3rem;
+    }
+    .extras .checkbox-list label {
+      display: block;
+      font-size: 0.95rem;
+    }
+    .cart-bar {
+      position: fixed;
+      bottom: 1rem;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 2rem;
+      background-color: #fff;
+      border-radius: 30px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      max-width: 90%;
+    }
+    .cart-bar button {
+      background-color: #16dbe2;
+      color: white;
+      border: none;
+      padding: 0.5rem 1.2rem;
+      border-radius: 20px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .cart-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: none;
+      justify-content: center;
+      align-items: center;
+    }
+    .cart-content {
+      background: white;
+      border-radius: 1rem;
+      padding: 2rem;
+      max-width: 500px;
+      width: 90%;
+    }
+    .cart-item {
+      margin-bottom: 1rem;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 0.5rem;
+    }
+    .close-btn {
+      float: right;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 1.2rem;
+    }
+    .purchase-btn {
+      margin-top: 1rem;
+      width: 100%;
+      padding: 0.75rem;
+      background-color: #16dbe2;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+    @media (max-width: 600px) {
+      .search-box input {
+        width: 200px;
+      }
+      .menu-page {
+        padding: 1rem;
+      }
+    }
+  </style>
+</head>
 <body>
-  <h1>덮밥 메뉴</h1>
-  <button onclick="location.href='don_salmon.html'">연어덮밥 (₩9,000)</button>
-  <button onclick="location.href='don_eel.html'">장어덮밥 (₩12,000)</button>
-  <button onclick="location.href='don_bulgogi.html'">불고기덮밥 (₩10,000)</button>
+
+  </div>
+  <div id="storeList" class="store-list"></div>
+  <div id="menuPage" class="menu-page"></div>
+  <div id="cartBar" class="cart-bar" style="display:none;">
+    <span id="cartCount">🛒 0개 담김</span>
+    <button onclick="showCartModal()">장바구니 보기</button>
+  </div>
+  <div id="cartModal" class="cart-modal">
+    <div class="cart-content">
+      <span class="close-btn" onclick="closeCartModal()">×</span>
+      <h3>장바구니</h3>
+      <div id="cartItems"></div>
+      <button class="purchase-btn" onclick="purchaseCart()">구매하기</button>
+    </div>
+  </div>
+  <script>
+    function renderMenuPage(storeId) {
+      const store = stores.find(s => s.id === storeId);
+      const menuPageDiv = document.getElementById("menuPage");
+      document.getElementById("storeList").style.display = "none";
+      menuPageDiv.style.display = "block";
+      document.getElementById("cartBar").style.display = "flex";
+      menuPageDiv.innerHTML = `<h2>${store.name}</h2>` +
+        store.menu.map(item => {
+          const extrasHtml = item.extras.map((extra, i) => `
+            <label><input type="checkbox" name="extras-${item.name}" value="${extra.name}" data-price="${extra.price}" /> ${extra.name} (+${extra.price.toLocaleString()}원)</label>
+          `).join('');
+          return `
+          <div class="menu-item">
+            <div class="menu-item-top">
+              <h4>${item.name} - ${item.price.toLocaleString()}원</h4>
+              <button onclick="addToCart('${item.name}', ${item.price}, ${storeId})">담기</button>
+            </div>
+            <div class="extras">
+              <label>추가 메뉴:</label>
+              <div class="checkbox-list" id="extras-${item.name.replace(/\s+/g, '')}">${extrasHtml}</div>
+            </div>
+          </div>`;
+        }).join('');
+    }
+
+    function addToCart(name, basePrice, storeId) {
+      const extrasContainer = document.getElementById(`extras-${name.replace(/\s+/g, '')}`);
+      const checkedBoxes = extrasContainer.querySelectorAll('input[type="checkbox"]:checked');
+      const selectedExtras = Array.from(checkedBoxes).map(box => ({name: box.value, price: parseInt(box.dataset.price)}));
+      const totalExtrasPrice = selectedExtras.reduce((acc, cur) => acc + cur.price, 0);
+      const totalPrice = basePrice + totalExtrasPrice;
+      cart.push({ name, price: totalPrice, extras: selectedExtras });
+      updateCartCount();
+    }
+  </script>
 </body>
 </html>
+  </div>
+  <script>
+    const sampleReviews = [
+      "정말 맛있고 깔끔했어요!",
+      "친절한 서비스와 빠른 배달!",
+      "양이 푸짐해서 만족했습니다.",
+      "국물 맛이 깊고 풍미가 좋았어요.",
+      "재료가 신선해서 믿음이 갑니다."
+    ];
 
-<!-- ramen.html -->
-<!DOCTYPE html>
-<html lang="ko">
-<head><meta charset="UTF-8"><title>라멘집</title></head>
-<body>
-  <h1>라멘 메뉴</h1>
-  <button onclick="location.href='ramen_tonkotsu.html'">돈코츠 라멘 (₩8,500)</button>
-  <button onclick="location.href='ramen_shoyu.html'">소유 라멘 (₩8,000)</button>
+    function renderMenuPage(storeId) {
+      const store = stores.find(s => s.id === storeId);
+      const menuPageDiv = document.getElementById("menuPage");
+      document.getElementById("storeList").style.display = "none";
+      menuPageDiv.style.display = "block";
+      document.getElementById("cartBar").style.display = "flex";
+
+      let menuHTML = `<h2>${store.name}</h2>`;
+      store.menu.forEach(item => {
+        const extrasHtml = item.extras.map(extra => `
+          <label><input type="checkbox" value="${extra.name}" data-price="${extra.price}" /> ${extra.name} (+${extra.price.toLocaleString()}원)</label>
+        `).join('');
+
+        menuHTML += `
+          <div class="menu-item">
+            <div class="menu-item-top">
+              <h4>${item.name} - ${item.price.toLocaleString()}원</h4>
+              <button onclick="addToCart('${item.name}', ${item.price}, ${storeId})">담기</button>
+            </div>
+            <div class="extras">
+              <label>추가 메뉴:</label>
+              <div class="checkbox-list" id="extras-${item.name.replace(/\s+/g, '')}">${extrasHtml}</div>
+            </div>
+          </div>
+        `;
+      });
+
+      
+     menuHTML += `
+        <div class="review-section">
+          <h3>리뷰 ⭐</h3>
+          <div id="reviewList">
+            ${sampleReviews.map((r, i) => `<div class="review"><strong>익명${i + 1}</strong><div>⭐ ${5 - i % 3}점</div><p>${r}</p></div>`).join('')}
+          </div>
+          <div class="review-form">
+            <h4>리뷰 작성하기</h4>
+            <input type="text" id="reviewName" placeholder="이름 (선택)" />
+            <select id="reviewRating">
+              <option value="5">⭐ 5점</option>
+              <option value="4">⭐ 4점</option>
+              <option value="3">⭐ 3점</option>
+              <option value="2">⭐ 2점</option>
+              <option value="1">⭐ 1점</option>
+            </select>
+            <textarea id="reviewContent" placeholder="리뷰를 입력하세요"></textarea>
+            <button onclick="submitReview()">리뷰 등록</button>
+          </div>
+        </div>
+      `;
+
+      menuPageDiv.innerHTML = menuHTML;
+    }
+
+    function submitReview() {
+      const name = document.getElementById("reviewName").value || "익명";
+      const rating = document.getElementById("reviewRating").value;
+      const content = document.getElementById("reviewContent").value.trim();
+      if (!content) return alert("리뷰 내용을 입력해주세요.");
+      const reviewList = document.getElementById("reviewList");
+      const newReview = document.createElement("div");
+      newReview.className = "review";
+      newReview.innerHTML = `<strong>${name}</strong><div>⭐ ${rating}점</div><p>${content}</p>`;
+      reviewList.prepend(newReview);
+      document.getElementById("reviewContent").value = "";
+      document.getElementById("reviewName").value = "";
+      document.getElementById("reviewRating").value = "5";
+    }
+  </script>
 </body>
 </html>
-
-<!-- sushi.html -->
-<!DOCTYPE html>
-<html lang="ko">
-<head><meta charset="UTF-8"><title>초밥집</title></head>
-<body>
-  <h1>초밥 메뉴</h1>
-  <button onclick="location.href='sushi_salmon.html'">연어 초밥 (₩11,000)</button>
-  <button onclick="location.href='sushi_tuna.html'">참치 초밥 (₩12,000)</button>
-  <button onclick="location.href='sushi_sashimi.html'">모둠 사시미 (₩18,000)</button>
-</body>
-</html>
-
